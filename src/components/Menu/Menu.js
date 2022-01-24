@@ -8,7 +8,7 @@ const DownIcon = () => {
     return (
         <div>
             <svg width="35" height="26" viewBox="0 0 35 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15.4001 22.5116C15.7692 23.001 16.3424 23.2942 16.9553 23.3069C17.5682 23.3197 18.1531 23.0506 18.5423 22.5769L31.8731 6.35075C32.3593 5.75888 32.4648 4.94128 32.1447 4.24537C31.8246 3.54947 31.1351 3.09752 30.3693 3.08158L4.39417 2.54112C3.62834 2.52518 2.92068 2.94806 2.57191 3.63005C2.22314 4.31204 2.29453 5.13333 2.75575 5.74491L15.4001 22.5116Z" fill="#FDDA33" stroke="#FDDA33" strokeWidth="4" strokeLinejoin="round"/>
+                <path d="M15.4001 22.5116C15.7692 23.001 16.3424 23.2942 16.9553 23.3069C17.5682 23.3197 18.1531 23.0506 18.5423 22.5769L31.8731 6.35075C32.3593 5.75888 32.4648 4.94128 32.1447 4.24537C31.8246 3.54947 31.1351 3.09752 30.3693 3.08158L4.39417 2.54112C3.62834 2.52518 2.92068 2.94806 2.57191 3.63005C2.22314 4.31204 2.29453 5.13333 2.75575 5.74491L15.4001 22.5116Z" fill="#FDDA33" stroke="#FDDA33" strokeWidth="4" strokeLinejoin="round" />
             </svg>
         </div>
     )
@@ -69,7 +69,7 @@ const StyledMenu = styled((props) => (
     },
 }));
 
-const CustomMenu = ({title, items, active, setActive}) => {
+const CustomMenu = ({ title, name, items, active, setActive }) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
     const handleClick = (event) => {
@@ -77,7 +77,7 @@ const CustomMenu = ({title, items, active, setActive}) => {
     };
     const handleClose = (index) => {
         setAnchorEl(null);
-        if(index !== -1) {
+        if (index !== -1) {
             setActive(index)
         }
     };
@@ -94,9 +94,9 @@ const CustomMenu = ({title, items, active, setActive}) => {
                 onClick={handleClick}
                 endIcon={<DownIcon />}
             >
-                {active === -1 ? title : items[active]}
+                {active === -1 ? title : `${name} ${items[active].toString(10)}`}
             </MButton>
-            <StyledMenu
+            {items.length !== 0 && <StyledMenu
                 id="demo-customized-menu"
                 MenuListProps={{
                     'aria-labelledby': 'demo-customized-button',
@@ -108,11 +108,11 @@ const CustomMenu = ({title, items, active, setActive}) => {
                 {items.map((item, index) => {
                     return (
                         <MenuItem onClick={() => handleClose(index)} key={index} disableRipple>
-                            {item}
+                            {`${name} ${item.toString(10)}`}
                         </MenuItem>
                     )
                 })}
-            </StyledMenu>
+            </StyledMenu>}
         </div>
     );
 }

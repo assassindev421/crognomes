@@ -3,9 +3,29 @@ import Link from '@mui/material/Link'
 import styled from 'styled-components'
 import Container from '@mui/material/Container'
 import Button from '@mui/material/Button'
+import WalletConnectProvider from '@walletconnect/web3-provider'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Divide as Hamburger } from 'hamburger-react'
 import { useMedia } from 'react-use'
+import Web3Modal from 'web3modal'
+import { ethers } from 'ethers'
+
+const Wrapper = styled(motion.div)`
+  height: 100%;
+  width: 100%;
+  background: rgba(7, 2, 19, 0.9);
+  z-index: 1000;
+
+  position: fixed;
+  left: 0;
+  top: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  gap: 30px;
+  padding-top: 150px;
+`;
 
 const MenuContainer = styled(Container)`
     width: 100%;
@@ -71,13 +91,57 @@ const BurgerMenu = () => {
     )
 }
 
-const Header = () => {
+const Header = ({ account, setAccount, setProvider }) => {
     const [isOpen, setIsOpen] = useState(false)
     const isMobile = useMedia('(max-width: 1075px)')
 
+    const providerOptions = {
+        walletconnect: {
+            package: WalletConnectProvider,
+            options: {
+                chainId: 25,
+                rpc: {
+                    25: "https://evm-cronos.crypto.org",
+                },
+                network: "cronos",
+            },
+        },
+
+        injected: {
+            display: {
+                logo: "https://github.com/MetaMask/brand-resources/raw/master/SVG/metamask-fox.svg",
+                name: "MetaMask",
+                description: "Connect with MetaMask in your browser",
+            },
+            package: null,
+        },
+    }
+
+    const web3Modal = new Web3Modal({
+        cacheProvider: false,
+        providerOptions,
+    })
+
+    const filterAddress = (address) => {
+        return address.slice(0, 5) + '...' + address.slice(38, 42)
+    }
+
+    const connectWallet = async () => {
+        const connection = await web3Modal.connect()
+        const _provider = new ethers.providers.Web3Provider(connection)
+        _provider.provider.request({ method: 'eth_requestAccounts' }).then((res) => {
+            setAccount(res[0])
+        })
+        setProvider(_provider)
+        _provider.on('disconnect', (error) => {
+            web3Modal.clearCachedProvider()
+            window.location.reload()
+        })
+    }
+
     return (
         <>
-            {!isMobile ? 
+            {!isMobile ?
                 <MenuContainer>
                     <LinkText>The Story</LinkText>
                     <LinkText>Roadmap</LinkText>
@@ -85,32 +149,15 @@ const Header = () => {
                     <LinkText>FAQ</LinkText>
                 </MenuContainer> :
                 <MobileMenuContainer>
-                    <Hamburger color="#977D00" rounded toggled={isOpen} toggle={setIsOpen}/>
-                    { isOpen && <BurgerMenu /> }
+                    <Hamburger color="#977D00" rounded toggled={isOpen} toggle={setIsOpen} />
+                    {isOpen && <BurgerMenu />}
                 </MobileMenuContainer>
             }
-            <MButton>
-                CONNECT YOUR WALLET
+            <MButton onClick={connectWallet}>
+                {account ? filterAddress(account) : 'CONNECT YOUR WALLET'}
             </MButton>
         </>
     )
 }
-
-const Wrapper = styled(motion.div)`
-  height: 100%;
-  width: 100%;
-  background: rgba(7, 2, 19, 0.9);
-  z-index: 1000;
-
-  position: fixed;
-  left: 0;
-  top: 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: left;
-  gap: 30px;
-  padding-top: 150px;
-`;
 
 export default Header

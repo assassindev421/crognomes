@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { ethers } from 'ethers'
+import BigNumber from 'bignumber.js'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Grid from '@mui/material/Grid'
 import Menu from '../Menu/Menu'
 import styled from 'styled-components'
 
+import ABIs from '../../config/abis.json'
 import Gnomes from '../../assets/gnomes.png'
 
 const GnomeDiv = styled.div`
@@ -74,39 +77,109 @@ const SButton = styled(Button)`
     height: 57px;
 `
 
-const Content = () => {
+const Content = ({ account, provider }) => {
+    const [ctokAmount, setCtokAmount] = useState(0)
+    const [utilContract, setUtilContract] = useState()
     const [gnomeActive, setGnomeActive] = useState(-1)
     const [gnomideActive, setGnomideActive] = useState(-1)
     const [crobyActive, setCrobyActive] = useState(-1)
+    const [crognomeList, setCrognomeList] = useState([])
+    const [crognomideList, setCrognomideList] = useState([])
+    const [crobyList, setCrobyList] = useState([])
+
+    const getTotalClaimable = async () => {
+        const contract = new ethers.Contract(ABIs[0].address, ABIs[0].abi, provider.getSigner())
+        const method = await contract.getTotalClaimable(account)
+        setCtokAmount((parseInt(method.toString(10)) / (10 ** 18)).toFixed(2))
+    }
+
+    const getReward = async () => {
+        await utilContract.getReward(account)
+        getTotalClaimable()
+    }
+
+    const getCroNFTList = async () => {
+        setCrognomeList(await getWalletOfOwner(1))
+        setCrognomideList(await getWalletOfOwner(2))
+        setCrobyList(await getWalletOfOwner(3))
+    }
+
+    const getWalletOfOwner = async (index) => {
+        const contract = new ethers.Contract(ABIs[index].address, ABIs[index].abi, provider)
+        console.log("owner:", await contract.walletOfOwner(account))
+        return await contract.walletOfOwner(account)
+    }
+
+    const breedCroNFTs = async () => {
+        const contract = new ethers.Contract(ABIs[4].address, ABIs[4].abi, provider.getSigner())
+        const allowance = await contract.allowance(account, ABIs[0].address)
+        if (new BigNumber(allowance.toString()).lt(new BigNumber(300).times(10 ** 18))) {
+            const tx = await contract.approve(ABIs[0].address, "300000000000000000000000")
+            await tx.wait()
+        }
+        await utilContract.breedCroby(crognomeList[gnomeActive], crognomideList[gnomideActive])
+        await getCroNFTList()
+    }
+
+    const growCroby = async () => {
+        await utilContract.growUp(crobyList[crobyActive])
+        await getCroNFTList()
+    }
+
+    const checkBalance = async (limit) => {
+        const contract = new ethers.Contract(ABIs[4].address, ABIs[4].abi, provider)
+        if (contract.balanceOf(account) < limit) return false;
+        return true;
+    }
+
+    useEffect(() => {
+        if (account != undefined) {
+            setUtilContract(new ethers.Contract(ABIs[0].address, ABIs[0].abi, provider.getSigner()))
+            getTotalClaimable()
+            getCroNFTList()
+        }
+    }, [account])
 
     return (
         <>
-            <Grid container style={{justifyContent:'center',marginTop:120, height:'100%'}}>
+            <Grid container style={{ justifyContent: 'center', marginTop: 120, height: '100%' }}>
                 <MBox>
                     <TextTitle>Claim Your CCL Tokens</TextTitle>
-                    <MButton>XXX CLAIMABLE TOKENS</MButton>
-                    <SButton>CLAIM</SButton>
+                    <MButton>{ctokAmount} CLAIMABLE TOKENS</MButton>
+                    <SButton onClick={getReward}>CLAIM</SButton>
                 </MBox>
                 <MBox>
                     <Box>
                         <TextTitle>Breed Your Croby</TextTitle>
                         <SubTitle>Required: 300 CCL</SubTitle>
                     </Box>
-                    <Menu title='SELECT YOUR CROGNOME' items={['CROGNOME1', 'CROGNOME2']} active={gnomeActive} setActive={setGnomeActive} />
-                    <Menu title='SELECT YOUR CROGNOMIDE' items={['CROGNOMIDE1', 'CROGNOMIDE2']} active={gnomideActive} setActive={setGnomideActive} />
-                    <SButton>BREED</SButton>
+                    <Menu title='SELECT YOUR CROGNOME'
+                        name='CROGNOME'
+                        items={crognomeList}
+                        active={gnomeActive}
+                        setActive={setGnomeActive} />
+                    <Menu title='SELECT YOUR CROGNOMIDE'
+                        name='CROGNOMIDE'
+                        items={crognomideList}
+                        active={gnomideActive}
+                        setActive={setGnomideActive} />
+                    <SButton onClick={breedCroNFTs}>BREED</SButton>
                 </MBox>
                 <MBox>
                     <Box>
                         <TextTitle>Grow Up Your Croby</TextTitle>
                         <SubTitle>Required: 445 CCL</SubTitle>
                     </Box>
-                    <Menu title='SELECT YOUR CROBY' items={['CROBY1', 'CROBY2']} active={crobyActive} setActive={setCrobyActive} />
-                    <SButton>GROW UP</SButton>
+                    <Menu title='SELECT YOUR CROBY'
+                        name='CROBY'
+                        items={crobyList}
+                        active={crobyActive}
+                        setActive={setCrobyActive} />
+                    <SButton onClick={growCroby}>GROW UP</SButton>
                 </MBox>
             </Grid>
             <GnomeDiv>
-                <img src={Gnomes} style={{width:271,height:144,marginTop:-20}} />
+                <img src={Gnomes} style={{ width: 271, height: 144, marginTop: -20 }} />
             </GnomeDiv>
         </>
     )

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import Header from '../components/Header/Header'
@@ -19,15 +19,25 @@ const Shadow = styled.div`
 `
 
 const Home = () => {
+    const [provider, setProvider] = useState()
+    const [account, setAccount] = useState()
+
     return (
-        <div className='top' style={{height:'100%'}}>
+        <div className='top' style={{ height: '100%' }}>
             <Wrapper>
                 <Shadow>
-                    <Header/>
-                    <Content/>
+                    <Header
+                        account={account}
+                        setAccount={setAccount}
+                        setProvider={setProvider}
+                    />
+                    <Content
+                        account={account}
+                        provider={provider}
+                    />
                 </Shadow>
             </Wrapper>
-            <Footer/>
+            <Footer />
         </div>
     )
 }
