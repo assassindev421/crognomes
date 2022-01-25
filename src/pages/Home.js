@@ -21,7 +21,7 @@ const Shadow = styled.div`
 `
 
 const Home = () => {
-    const [provider, setProvider] = useState()
+    const [web3, setWeb3] = useState()
     const [account, setAccount] = useState()
 
     return (
@@ -31,11 +31,11 @@ const Home = () => {
                     <Header
                         account={account}
                         setAccount={setAccount}
-                        setProvider={setProvider}
+                        setWeb3={setWeb3}
                     />
                     <Content
                         account={account}
-                        provider={provider}
+                        web3={web3}
                     />
                 </Shadow>
             </Wrapper>

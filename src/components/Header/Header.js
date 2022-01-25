@@ -9,6 +9,7 @@ import { Divide as Hamburger } from 'hamburger-react'
 import { useMedia } from 'react-use'
 import Web3Modal from 'web3modal'
 import { ethers } from 'ethers'
+import Web3 from 'web3'
 
 const Wrapper = styled(motion.div)`
   height: 100%;
@@ -91,7 +92,7 @@ const BurgerMenu = () => {
     )
 }
 
-const Header = ({ account, setAccount, setProvider }) => {
+const Header = ({ account, setAccount, setWeb3 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const isMobile = useMedia('(max-width: 1075px)')
 
@@ -127,13 +128,13 @@ const Header = ({ account, setAccount, setProvider }) => {
     }
 
     const connectWallet = async () => {
-        const connection = await web3Modal.connect()
-        const _provider = new ethers.providers.Web3Provider(connection)
-        _provider.provider.request({ method: 'eth_requestAccounts' }).then((res) => {
+        const provider = await web3Modal.connect()
+        const _web3 = new Web3(provider)
+        _web3.eth.currentProvider.request({ method: 'eth_requestAccounts' }).then((res) => {
             setAccount(res[0])
         })
-        setProvider(_provider)
-        _provider.on('disconnect', (error) => {
+        setWeb3(_web3)
+        provider.on('disconnect', (error) => {
             web3Modal.clearCachedProvider()
             window.location.reload()
         })

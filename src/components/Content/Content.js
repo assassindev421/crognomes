@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { ethers } from 'ethers'
 import Grid from '@mui/material/Grid'
 import styled from 'styled-components'
 
@@ -22,13 +21,13 @@ const GnomeDiv = styled.div`
     justify-content: center;
 `
 
-const Content = ({ account, provider }) => {
+const Content = ({ account, web3 }) => {
     const [utilContract, setUtilContract] = useState()
     const [crobyList, setCrobyList] = useState([])
 
     useEffect(() => {
         if (account !== undefined) {
-            setUtilContract(new ethers.Contract(ABIs[0].address, ABIs[0].abi, provider.getSigner()))
+            setUtilContract(new web3.eth.Contract(ABIs[0].abi, ABIs[0].address))
         }
     }, [account])
 
@@ -36,14 +35,14 @@ const Content = ({ account, provider }) => {
         <>
             <Grid container style={{ justifyContent: 'center', marginTop: 120, height: '100%' }}>
                 <Claim account={account}
-                    provider={provider}
+                    web3={web3}
                     utilContract={utilContract} />
                 <Breed account={account}
-                    provider={provider}
+                    web3={web3}
                     utilContract={utilContract}
                     setCrobyList={setCrobyList} />
                 <Grow account={account}
-                    provider={provider}
+                    web3={web3}
                     utilContract={utilContract}
                     crobyList={crobyList}
                 />

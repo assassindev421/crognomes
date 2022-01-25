@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { ethers } from 'ethers'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import styled from 'styled-components'
@@ -66,40 +65,31 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Claim = ({ account, provider, utilContract }) => {
+const Claim = ({ account, web3, utilContract }) => {
     const [ctokAmount, setCtokAmount] = useState(0)
     const [loading, setLoading] = useState(false)
 
     const getTotalClaimable = async () => {
-        const contract = new ethers.Contract(ABIs[0].address, ABIs[0].abi, provider.getSigner())
-        const method = await contract.getTotalClaimable(account).catch(e => {
-            console.log(e)
-            setLoading(false)
-        })
+        const contract = new web3.eth.Contract(ABIs[0].abi, ABIs[0].address)
+        const method = await contract.methods.getTotalClaimable(account).call()
         setCtokAmount((parseInt(method.toString(10)) / (10 ** 18)).toFixed(2))
         setLoading(false)
     }
 
     const getReward = async () => {
         setLoading(true)
-        await utilContract.getReward(account).catch(e => {
-            console.log(e)
-            setLoading(false)
+        await utilContract.methods.getReward(account).send({
+            from: account
         })
         getTotalClaimable()
     }
 
     const migrate = async () => {
         setLoading(true)
-        console.log("<!--step1-->")
-        const contract = new ethers.Contract(ABIs[1].address, ABIs[1].abi, provider.getSigner())
-        console.log("<!--step2-->")
-        await contract.migrateFromOldCrognome().catch(e => {
-            console.log(e)
-            console.log("<!--stepII-->")
-            setLoading(false)
+        const contract = new web3.eth.Contract(ABIs[1].abi, ABIs[1].address)
+        await contract.methods.migrateFromOldCrognome().send({
+            from: account
         })
-        console.log("<!--step3-->")
         setLoading(false)
     }
 
@@ -112,7 +102,9 @@ const Claim = ({ account, provider, utilContract }) => {
     return (
         <MBox>
             <TextTitle>Claim Your CCL Tokens</TextTitle>
-            <MButton>{ctokAmount} CLAIMABLE TOKENS</MButton>
+            <MButton onClick={getTotalClaimable}>
+                {ctokAmount} CLAIMABLE TOKENS
+            </MButton>
             <Box>
                 <SButton loading={loading}
                     onClick={getReward}

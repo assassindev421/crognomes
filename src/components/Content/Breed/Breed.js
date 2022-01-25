@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { ethers } from 'ethers'
 import BigNumber from 'bignumber.js'
 import Box from '@mui/material/Box'
 import LoadingButton from '@mui/lab/LoadingButton'
@@ -7,6 +6,7 @@ import Menu from '../../Menu/Menu'
 import styled from 'styled-components'
 
 import ABIs from '../../../config/abis.json'
+import Web3 from 'web3'
 
 const TextTitle = styled.div`
     color: #FDDA33;
@@ -60,7 +60,7 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Breed = ({ account, provider, utilContract, setCrobyList }) => {
+const Breed = ({ account, web3, utilContract, setCrobyList }) => {
     const [gnomeActive, setGnomeActive] = useState(-1)
     const [gnomideActive, setGnomideActive] = useState(-1)
     const [crognomeList, setCrognomeList] = useState([])
@@ -69,32 +69,21 @@ const Breed = ({ account, provider, utilContract, setCrobyList }) => {
 
     const breedCroNFTs = async () => {
         setLoading(true)
-        console.log("<!--step1-->")
-        const contract = new ethers.Contract(ABIs[4].address, ABIs[4].abi, provider.getSigner())
-        console.log("<!--step2-->")
-        const allowance = await contract.allowance(account, ABIs[0].address).catch(e => {
-            console.log("<!--stepII-->")
-        })
-        console.log("<!--step3-->")
-        const balance = await contract.balanceOf(account)
-        console.log("<!--step4-->")
+        const contract = new Web3.eth.Contract(ABIs[4].abi, ABIs[4].address)
+        const allowance = await contract.methods.allowance(account, ABIs[0].address).call()
+        const balance = await contract.methods.balanceOf(account).call()
         if (new BigNumber(balance.toString()).lt(new BigNumber(300).times(10 ** 18))) {
             alert("You do not have enough CCL token for breed")
         }
-        console.log("<!--step5-->")
         if (new BigNumber(allowance.toString()).lt(new BigNumber(300).times(10 ** 18))) {
-            console.log(ABIs[0].address, "<!--step3--!>")
-            await contract.approve(ABIs[0].address, "300000000000000000000000")
+            await contract.methods.approve(ABIs[0].address, "300000000000000000000000").send({
+                from: account
+            })
         }
-        console.log("<!--step6-->")
-        await utilContract.breedCroby(crognomeList[gnomeActive], crognomideList[gnomideActive]).catch(e => {
-            console.log("<!--stepIII-->")
-            setLoading(false)
-            return;
+        await utilContract.methods.breedCroby(crognomeList[gnomeActive], crognomideList[gnomideActive]).send({
+            fromt: account
         })
-        console.log("<!--step7-->")
         await getCroNFTList()
-        console.log("<!--step8-->")
         setLoading(false)
     }
 
@@ -105,15 +94,15 @@ const Breed = ({ account, provider, utilContract, setCrobyList }) => {
     }
 
     const getWalletOfOwner = async (index) => {
-        const contract = new ethers.Contract(ABIs[index].address, ABIs[index].abi, provider)
-        return await contract.walletOfOwner(account)
+        const contract = new web3.eth.Contract(ABIs[index].abi, ABIs[index].address)
+        return await contract.methods.walletOfOwner(account).call()
     }
 
     useEffect(() => {
         if (account !== undefined) {
             getCroNFTList()
         }
-    })
+    }, [account])
 
     return (
         <MBox>

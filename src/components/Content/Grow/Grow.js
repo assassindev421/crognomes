@@ -56,25 +56,27 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Grow = ({ account, provider, utilContract, crobyList }) => {
+const Grow = ({ account, web3, utilContract, crobyList }) => {
     const [crobyActive, setCrobyActive] = useState(-1)
     const [loading, setLoading] = useState(false)
 
     const growCroby = async () => {
         if (crobyActive !== -1) {
             setLoading(true);
-            const contract = new ethers.Contract(ABIs[4].address, ABIs[4].abi, provider.getSigner())
-            const allowance = await contract.allowance(account, ABIs[0].address)
-            const balance = await contract.balanceOf(account)
+            const contract = new web3.eth.Contract(ABIs[4].abi, ABIs[4].address)
+            const allowance = await contract.methods.allowance(account, ABIs[0].address).call()
+            const balance = await contract.methods.balanceOf(account).call()
             if (new BigNumber(balance.toString()).lt(new BigNumber(445).times(10 ** 18))) {
                 alert("You do not have enough CCL token for breed")
             }
             if (new BigNumber(allowance.toString()).lt(new BigNumber(445).times(10 ** 18))) {
-                console.log(ABIs[0].address, "<!--step3--!>")
-                await contract.approve(ABIs[0].address, "300000000000000000000000")
+                await contract.methods.approve(ABIs[0].address, "300000000000000000000000").send({
+                    from: account
+                })
             }
-            const tx = await utilContract.growUp(crobyList[crobyActive])
-            await tx.wait()
+            await utilContract.growUp(crobyList[crobyActive]).send({
+                from: account
+            })
             setLoading(false)
             // await getCroNFTList()
         }
