@@ -27,10 +27,9 @@ const Content = ({ account, web3, rightChain, setAlert, setNotice }) => {
 
     useEffect(() => {
         if (account !== undefined) {
-            console.log("useEffect")
             setUtilContract(new web3.eth.Contract(ABIs[0].abi, ABIs[0].address))
         }
-    }, [account])
+    }, [account, rightChain])
 
     return (
         <>
@@ -55,6 +54,7 @@ const Content = ({ account, web3, rightChain, setAlert, setNotice }) => {
                     rightChain={rightChain}
                     utilContract={utilContract}
                     crobyList={crobyList}
+                    setCrobyList={setCrobyList}
                     setAlert={setAlert}
                     setNotice={setNotice}
                 />

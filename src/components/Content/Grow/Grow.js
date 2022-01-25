@@ -55,9 +55,20 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Grow = ({ account, web3, rightChain, utilContract, crobyList, setAlert, setNotice }) => {
+const Grow = ({ account, web3, rightChain, utilContract, crobyList, setCrobyList, setAlert, setNotice }) => {
     const [crobyActive, setCrobyActive] = useState(-1)
     const [loading, setLoading] = useState(false)
+
+    const getWalletOfOwner = async (index) => {
+        const contract = new web3.eth.Contract(ABIs[index].abi, ABIs[index].address)
+        return await contract.methods.walletOfOwner(account).call()
+    }
+
+    const getCrobyList = async () => {
+        const list = await getWalletOfOwner(3)
+        setCrobyActive(-1)
+        setCrobyList(list)
+    }
 
     const growCroby = async () => {
         if (crobyActive !== -1) {
@@ -78,6 +89,7 @@ const Grow = ({ account, web3, rightChain, utilContract, crobyList, setAlert, se
                 await utilContract.methods.growUp(crobyList[crobyActive]).send({
                     from: account
                 })
+                await getCrobyList()
                 setNotice(["success", "Your croby has grown"])
                 setAlert(true)
                 setLoading(false)

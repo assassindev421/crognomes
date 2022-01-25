@@ -125,10 +125,9 @@ const Breed = ({ account, web3, rightChain, utilContract, setCrobyList, setAlert
 
     useEffect(() => {
         if (account !== undefined && rightChain === true) {
-            console.log("useEffect")
             getCroNFTList()
         }
-    }, [account])
+    }, [account, rightChain])
 
     return (
         <MBox>
