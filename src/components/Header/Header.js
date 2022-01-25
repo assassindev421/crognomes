@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Divide as Hamburger } from 'hamburger-react'
 import { useMedia } from 'react-use'
 import Web3Modal from 'web3modal'
-import { ethers } from 'ethers'
 import Web3 from 'web3'
 
 const Wrapper = styled(motion.div)`
@@ -92,7 +91,7 @@ const BurgerMenu = () => {
     )
 }
 
-const Header = ({ account, setAccount, setWeb3 }) => {
+const Header = ({ account, setWeb3, setAccount, setRightChain, setAlert, setNotice }) => {
     const [isOpen, setIsOpen] = useState(false)
     const isMobile = useMedia('(max-width: 1075px)')
 
@@ -100,9 +99,9 @@ const Header = ({ account, setAccount, setWeb3 }) => {
         walletconnect: {
             package: WalletConnectProvider,
             options: {
-                chainId: 25,
+                chainId: 338,
                 rpc: {
-                    25: "https://evm-cronos.crypto.org",
+                    338: "https://cronos-testnet-3.crypto.org:8545/",
                 },
                 network: "cronos",
             },
@@ -127,17 +126,30 @@ const Header = ({ account, setAccount, setWeb3 }) => {
         return address.slice(0, 5) + '...' + address.slice(38, 42)
     }
 
+    const checkNetwork = (chainId) => {
+        if (Number(chainId) === 338) {
+            setRightChain(true)
+        } else {
+            setNotice(["error", "Your wallet is connected to wrong network. Please switch to Cronos Testnet."])
+            setAlert(true)
+            setRightChain(false)
+        }
+    }
+
     const connectWallet = async () => {
         const provider = await web3Modal.connect()
         const _web3 = new Web3(provider)
+        let _account = "";
         _web3.eth.currentProvider.request({ method: 'eth_requestAccounts' }).then((res) => {
-            setAccount(res[0])
+            _account = res[0]
         })
+        const chainId = await _web3.eth.getChainId()
+        checkNetwork(chainId)
         setWeb3(_web3)
-        provider.on('disconnect', (error) => {
-            web3Modal.clearCachedProvider()
-            window.location.reload()
-        })
+        setAccount(_account)
+        provider.on("chainChanged", (chainId) => {
+            checkNetwork(chainId)
+        });
     }
 
     return (

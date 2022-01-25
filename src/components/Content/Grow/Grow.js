@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { ethers } from 'ethers'
 import BigNumber from 'bignumber.js'
 import Box from '@mui/material/Box'
 import styled from 'styled-components'
@@ -56,29 +55,41 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Grow = ({ account, web3, utilContract, crobyList }) => {
+const Grow = ({ account, web3, rightChain, utilContract, crobyList, setAlert, setNotice }) => {
     const [crobyActive, setCrobyActive] = useState(-1)
     const [loading, setLoading] = useState(false)
 
     const growCroby = async () => {
         if (crobyActive !== -1) {
             setLoading(true);
-            const contract = new web3.eth.Contract(ABIs[4].abi, ABIs[4].address)
-            const allowance = await contract.methods.allowance(account, ABIs[0].address).call()
-            const balance = await contract.methods.balanceOf(account).call()
-            if (new BigNumber(balance.toString()).lt(new BigNumber(445).times(10 ** 18))) {
-                alert("You do not have enough CCL token for breed")
-            }
-            if (new BigNumber(allowance.toString()).lt(new BigNumber(445).times(10 ** 18))) {
-                await contract.methods.approve(ABIs[0].address, "300000000000000000000000").send({
+            try {
+                const contract = new web3.eth.Contract(ABIs[4].abi, ABIs[4].address)
+                const allowance = await contract.methods.allowance(account, ABIs[0].address).call()
+                const balance = await contract.methods.balanceOf(account).call()
+                if (new BigNumber(balance.toString()).lt(new BigNumber(445).times(10 ** 18))) {
+                    setNotice(["error", "Sorry, you do not have enough CCL token for breed"])
+                    setAlert(true)
+                }
+                if (new BigNumber(allowance.toString()).lt(new BigNumber(445).times(10 ** 18))) {
+                    await contract.methods.approve(ABIs[0].address, "300000000000000000000000").send({
+                        from: account
+                    })
+                }
+                await utilContract.methods.growUp(crobyList[crobyActive]).send({
                     from: account
                 })
+                setNotice(["success", "Your croby has grown"])
+                setAlert(true)
+                setLoading(false)
+                // await getCroNFTList()
+            } catch (e) {
+                setNotice(["error", "Sorry, error occured during the transaction"])
+                setAlert(true)
+                setLoading(false)
             }
-            await utilContract.growUp(crobyList[crobyActive]).send({
-                from: account
-            })
-            setLoading(false)
-            // await getCroNFTList()
+        } else {
+            setNotice(["error", "Please select croby to grow"])
+            setAlert(true)
         }
     }
 
@@ -93,7 +104,9 @@ const Grow = ({ account, web3, utilContract, crobyList }) => {
                 items={crobyList}
                 active={crobyActive}
                 setActive={setCrobyActive} />
-            <SButton loading={loading} onClick={growCroby}>GROW UP</SButton>
+            <SButton loading={loading}
+                onClick={growCroby}
+                disabled={!rightChain}>GROW UP</SButton>
         </MBox>
     )
 }

@@ -21,12 +21,13 @@ const GnomeDiv = styled.div`
     justify-content: center;
 `
 
-const Content = ({ account, web3 }) => {
+const Content = ({ account, web3, rightChain, setAlert, setNotice }) => {
     const [utilContract, setUtilContract] = useState()
     const [crobyList, setCrobyList] = useState([])
 
     useEffect(() => {
         if (account !== undefined) {
+            console.log("useEffect")
             setUtilContract(new web3.eth.Contract(ABIs[0].abi, ABIs[0].address))
         }
     }, [account])
@@ -36,19 +37,30 @@ const Content = ({ account, web3 }) => {
             <Grid container style={{ justifyContent: 'center', marginTop: 120, height: '100%' }}>
                 <Claim account={account}
                     web3={web3}
-                    utilContract={utilContract} />
+                    rightChain={rightChain}
+                    utilContract={utilContract}
+                    setAlert={setAlert}
+                    setNotice={setNotice}
+                />
                 <Breed account={account}
                     web3={web3}
+                    rightChain={rightChain}
                     utilContract={utilContract}
-                    setCrobyList={setCrobyList} />
+                    setCrobyList={setCrobyList}
+                    setAlert={setAlert}
+                    setNotice={setNotice}
+                />
                 <Grow account={account}
                     web3={web3}
+                    rightChain={rightChain}
                     utilContract={utilContract}
                     crobyList={crobyList}
+                    setAlert={setAlert}
+                    setNotice={setNotice}
                 />
             </Grid>
             <GnomeDiv>
-                <img src={Gnomes} style={{ width: 271, height: 144, marginTop: -20 }} />
+                <img src={Gnomes} style={{ width: 271, height: 144, marginTop: -20 }} alt="gnome" />
             </GnomeDiv>
         </>
     )

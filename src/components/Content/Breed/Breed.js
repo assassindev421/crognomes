@@ -4,9 +4,7 @@ import Box from '@mui/material/Box'
 import LoadingButton from '@mui/lab/LoadingButton'
 import Menu from '../../Menu/Menu'
 import styled from 'styled-components'
-
 import ABIs from '../../../config/abis.json'
-import Web3 from 'web3'
 
 const TextTitle = styled.div`
     color: #FDDA33;
@@ -60,7 +58,7 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Breed = ({ account, web3, utilContract, setCrobyList }) => {
+const Breed = ({ account, web3, rightChain, utilContract, setCrobyList, setAlert, setNotice }) => {
     const [gnomeActive, setGnomeActive] = useState(-1)
     const [gnomideActive, setGnomideActive] = useState(-1)
     const [crognomeList, setCrognomeList] = useState([])
@@ -68,23 +66,50 @@ const Breed = ({ account, web3, utilContract, setCrobyList }) => {
     const [loading, setLoading] = useState(false)
 
     const breedCroNFTs = async () => {
-        setLoading(true)
-        const contract = new Web3.eth.Contract(ABIs[4].abi, ABIs[4].address)
-        const allowance = await contract.methods.allowance(account, ABIs[0].address).call()
-        const balance = await contract.methods.balanceOf(account).call()
-        if (new BigNumber(balance.toString()).lt(new BigNumber(300).times(10 ** 18))) {
-            alert("You do not have enough CCL token for breed")
+        if (gnomeActive !== -1 && gnomideActive !== -1) {
+            setLoading(true)
+            try {
+                if (await isBreedable() === true) {
+                    setNotice(["error", "Sorry, this crognomide is alreay used and not able to breed again"])
+                    setAlert(true)
+                    setLoading(false)
+                    return
+                }
+                const contract = new web3.eth.Contract(ABIs[4].abi, ABIs[4].address)
+                const allowance = await contract.methods.allowance(account, ABIs[0].address).call()
+                const balance = await contract.methods.balanceOf(account).call()
+                if (new BigNumber(balance.toString()).lt(new BigNumber(300).times(10 ** 18))) {
+                    setNotice(["error", "Sorry, you do not have enough CCL token for breed"])
+                    setAlert(true)
+                    setLoading(false)
+                    return
+                }
+
+                if (new BigNumber(allowance.toString()).lt(new BigNumber(300).times(10 ** 18))) {
+                    await contract.methods.approve(ABIs[0].address, "300000000000000000000000").send({
+                        from: account
+                    })
+                }
+                await utilContract.methods.breedCroby(crognomeList[gnomeActive], crognomideList[gnomideActive]).send({
+                    from: account
+                })
+                await getCroNFTList()
+                setNotice(["success", "Breeding has done"])
+                setAlert(true)
+                setLoading(false)
+            } catch (e) {
+                setNotice(["error", "Sorry, error occured during the transaction"])
+                setAlert(true)
+                setLoading(false)
+            }
+        } else {
+            setNotice(["error", "Please select crognome and crognomide to breed"])
+            setAlert(true)
         }
-        if (new BigNumber(allowance.toString()).lt(new BigNumber(300).times(10 ** 18))) {
-            await contract.methods.approve(ABIs[0].address, "300000000000000000000000").send({
-                from: account
-            })
-        }
-        await utilContract.methods.breedCroby(crognomeList[gnomeActive], crognomideList[gnomideActive]).send({
-            fromt: account
-        })
-        await getCroNFTList()
-        setLoading(false)
+    }
+
+    const isBreedable = async () => {
+        return await utilContract.methods.crognomidUsed(crognomideList[gnomideActive]).call()
     }
 
     const getCroNFTList = async () => {
@@ -99,7 +124,8 @@ const Breed = ({ account, web3, utilContract, setCrobyList }) => {
     }
 
     useEffect(() => {
-        if (account !== undefined) {
+        if (account !== undefined && rightChain === true) {
+            console.log("useEffect")
             getCroNFTList()
         }
     }, [account])
@@ -115,17 +141,18 @@ const Breed = ({ account, web3, utilContract, setCrobyList }) => {
                 items={crognomeList}
                 active={gnomeActive}
                 setActive={setGnomeActive}
-                disabled={loading}
+                disabled={loading && rightChain}
             />
             <Menu title='SELECT YOUR CROGNOMIDE'
                 name='CROGNOMIDE'
                 items={crognomideList}
                 active={gnomideActive}
                 setActive={setGnomideActive}
-                disabled={loading}
+                disabled={loading && rightChain}
             />
             <SButton loading={loading}
-                onClick={breedCroNFTs}>BREED</SButton>
+                onClick={breedCroNFTs}
+                disabled={!rightChain}>BREED</SButton>
         </MBox>
     )
 }

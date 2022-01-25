@@ -12,7 +12,7 @@ const TextTitle = styled.div`
     text-shadow: 4px 0 0 #000, -4px 0 0 #000, 0 4px 0 #000, 0 -4px 0 #000, 2px 2px #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
 `
 
-const MBox = styled(Box)`
+const Wrapper = styled(Box)`
     text-align: center;
     width: 525px;
     height: 500px;
@@ -22,6 +22,9 @@ const MBox = styled(Box)`
     flex-direction: column;
     justify-content: space-between;
     margin-bottom: 100px;
+`
+
+const MBox = styled(Box)`
     .Mui-disabled {
         background-color: rgba(253,218,51,0.8) !important;
     }
@@ -65,60 +68,80 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Claim = ({ account, web3, utilContract }) => {
+const Claim = ({ account, web3, rightChain, utilContract, setAlert, setNotice }) => {
     const [ctokAmount, setCtokAmount] = useState(0)
     const [loading, setLoading] = useState(false)
 
     const getTotalClaimable = async () => {
         const contract = new web3.eth.Contract(ABIs[0].abi, ABIs[0].address)
-        const method = await contract.methods.getTotalClaimable(account).call()
+        const method = await contract.methods.getTotalClaimable(account).call().catch(e => {
+            setLoading(false)
+        })
         setCtokAmount((parseInt(method.toString(10)) / (10 ** 18)).toFixed(2))
         setLoading(false)
     }
 
     const getReward = async () => {
         setLoading(true)
-        await utilContract.methods.getReward(account).send({
-            from: account
-        })
-        getTotalClaimable()
+        try {
+            await utilContract.methods.getReward(account).send({
+                from: account
+            })
+            setNotice(["success", "You have claimed your reward"])
+            setAlert(true)
+            getTotalClaimable()
+        } catch (e) {
+            setNotice(["error", "Sorry, error occured during the transaction"])
+            setAlert(true)
+            setLoading(false)
+        }
     }
 
     const migrate = async () => {
         setLoading(true)
-        const contract = new web3.eth.Contract(ABIs[1].abi, ABIs[1].address)
-        await contract.methods.migrateFromOldCrognome().send({
-            from: account
-        })
-        setLoading(false)
+        try {
+            const contract = new web3.eth.Contract(ABIs[1].abi, ABIs[1].address)
+            await contract.methods.migrateFromOldCrognome().send({
+                from: account
+            })
+            setNotice(["success", "You have migrated your old crognomes"])
+            setAlert(true)
+            setLoading(false)
+        } catch (e) {
+            setNotice(["error", "Sorry, error occured during the transaction"])
+            setAlert(true)
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
-        if (account !== undefined) {
+        if (account !== undefined && rightChain === true) {
+            console.log("useEffect")
             getTotalClaimable()
         }
     }, [account])
 
     return (
-        <MBox>
+        <Wrapper>
             <TextTitle>Claim Your CCL Tokens</TextTitle>
-            <MButton onClick={getTotalClaimable}>
-                {ctokAmount} CLAIMABLE TOKENS
-            </MButton>
-            <Box>
+            <MButton
+                onClick={getTotalClaimable}
+                disabled={!rightChain}>
+                {ctokAmount} CLAIMABLE TOKENS</MButton>
+            <MBox>
                 <SButton loading={loading}
                     onClick={getReward}
-                    variant="contained"
+                    disabled={!rightChain}
                 >CLAIM</SButton>
                 <SButton loading={loading}
                     onClick={migrate}
-                    variant="contained"
                     style={{ marginTop: 20 }}
+                    disabled={!rightChain}
                 >
                     MIGRATE
                 </SButton>
-            </Box>
-        </MBox>
+            </MBox>
+        </Wrapper>
     )
 }
 
