@@ -94,7 +94,7 @@ const CustomMenu = ({ title, name, items, active, setActive }) => {
                 onClick={handleClick}
                 endIcon={<DownIcon />}
             >
-                {active === -1 ? title : `${name} ${items[active].toString(10)}`}
+                {active === -1 || items.length === 0 ? title : `${name} ${items[active].toString(10)}`}
             </MButton>
             {items.length !== 0 && <StyledMenu
                 id="demo-customized-menu"

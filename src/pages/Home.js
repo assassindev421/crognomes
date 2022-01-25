@@ -11,6 +11,8 @@ const Wrapper = styled.div`
     background-repeat: no-repeat;
     font-family: Chewy;
     width: 100%;
+
+
 `
 
 const Shadow = styled.div`

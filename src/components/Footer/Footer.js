@@ -53,10 +53,10 @@ const Footer = () => {
     return (
         <Wrapper>
             <HiDiscord>
-                <TextField style={{fontSize: '20px'}}>
+                <TextField style={{ fontSize: '20px' }}>
                     Do you know where your Crypto cards actually come from?
                 </TextField>
-                <TextField style={{fontSize:'50px', color:'#7767C7'}}>
+                <TextField style={{ fontSize: '50px', color: '#7767C7' }}>
                     Come say hi to the early birds in the discord
                 </TextField>
                 <MButton>
@@ -64,9 +64,9 @@ const Footer = () => {
                 </MButton>
             </HiDiscord>
             <Social>
-                <img src={Logo} style={{width:218, height:70}}/>
-                <TextField style={{fontFamily: 'Montserrat', marginTop:40, lineHeight: '26px'}}>Copyright © CROGNOMES 2021</TextField>
-                <TextField style={{fontFamily: 'Montserrat', lineHeight: '26px'}}>*Not affiliated with crypto.com</TextField>
+                <img src={Logo} style={{ width: 218, height: 70 }} alt="logo" />
+                <TextField style={{ fontFamily: 'Montserrat', marginTop: 40, lineHeight: '26px' }}>Copyright © CROGNOMES 2021</TextField>
+                <TextField style={{ fontFamily: 'Montserrat', lineHeight: '26px' }}>*Not affiliated with crypto.com</TextField>
             </Social>
         </Wrapper>
     )
