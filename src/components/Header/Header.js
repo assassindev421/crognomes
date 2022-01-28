@@ -136,21 +136,21 @@ const Header = ({ account, setWeb3, setAccount, setRightChain, setAlert, setNoti
         }
     }
 
-    const connectWallet = async () => {
-        const provider = await web3Modal.connect()
-        const _web3 = new Web3(provider)
-        let _account = "";
-        _web3.eth.currentProvider.request({ method: 'eth_requestAccounts' }).then((res) => {
-            _account = res[0]
-        })
-        const chainId = await _web3.eth.getChainId()
-        checkNetwork(chainId)
-        setWeb3(_web3)
-        setAccount(_account)
-        provider.on("chainChanged", (chainId) => {
-            checkNetwork(chainId)
-        });
-    }
+    // const connectWallet = async () => {
+    //     const provider = await web3Modal.connect()
+    //     const _web3 = new Web3(provider)
+    //     let _account = "";
+    //     _web3.eth.currentProvider.request({ method: 'eth_requestAccounts' }).then((res) => {
+    //         _account = res[0]
+    //     })
+    //     const chainId = await _web3.eth.getChainId()
+    //     checkNetwork(chainId)
+    //     setWeb3(_web3)
+    //     setAccount(_account)
+    //     provider.on("chainChanged", (chainId) => {
+    //         checkNetwork(chainId)
+    //     });
+    // }
 
     return (
         <>
@@ -166,7 +166,7 @@ const Header = ({ account, setWeb3, setAccount, setRightChain, setAlert, setNoti
                     {isOpen && <BurgerMenu />}
                 </MobileMenuContainer>
             }
-            <MButton onClick={connectWallet}>
+            <MButton>
                 {account ? filterAddress(account) : 'CONNECT YOUR WALLET'}
             </MButton>
         </>
