@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Divide as Hamburger } from 'hamburger-react'
 import { useMedia } from 'react-use'
 import Web3Modal from 'web3modal'
-// import Web3 from 'web3'
+import Web3 from 'web3'
 
 const Wrapper = styled(motion.div)`
   height: 100%;
@@ -126,31 +126,31 @@ const Header = ({ account, setWeb3, setAccount, setRightChain, setAlert, setNoti
         return address.slice(0, 5) + '...' + address.slice(38, 42)
     }
 
-    // const checkNetwork = (chainId) => {
-    //     if (Number(chainId) === 338) {
-    //         setRightChain(true)
-    //     } else {
-    //         setNotice(["error", "Your wallet is connected to wrong network. Please switch to Cronos Testnet."])
-    //         setAlert(true)
-    //         setRightChain(false)
-    //     }
-    // }
+    const checkNetwork = (chainId) => {
+        if (Number(chainId) === 338) {
+            setRightChain(true)
+        } else {
+            setNotice(["error", "Your wallet is connected to wrong network. Please switch to Cronos Testnet."])
+            setAlert(true)
+            setRightChain(false)
+        }
+    }
 
-    // const connectWallet = async () => {
-    //     const provider = await web3Modal.connect()
-    //     const _web3 = new Web3(provider)
-    //     let _account = "";
-    //     _web3.eth.currentProvider.request({ method: 'eth_requestAccounts' }).then((res) => {
-    //         _account = res[0]
-    //     })
-    //     const chainId = await _web3.eth.getChainId()
-    //     checkNetwork(chainId)
-    //     setWeb3(_web3)
-    //     setAccount(_account)
-    //     provider.on("chainChanged", (chainId) => {
-    //         checkNetwork(chainId)
-    //     });
-    // }
+    const connectWallet = async () => {
+        const provider = await web3Modal.connect()
+        const _web3 = new Web3(provider)
+        let _account = "";
+        _web3.eth.currentProvider.request({ method: 'eth_requestAccounts' }).then((res) => {
+            _account = res[0]
+        })
+        const chainId = await _web3.eth.getChainId()
+        checkNetwork(chainId)
+        setWeb3(_web3)
+        setAccount(_account)
+        provider.on("chainChanged", (chainId) => {
+            checkNetwork(chainId)
+        });
+    }
 
     return (
         <>
@@ -166,7 +166,7 @@ const Header = ({ account, setWeb3, setAccount, setRightChain, setAlert, setNoti
                     {isOpen && <BurgerMenu />}
                 </MobileMenuContainer>
             }
-            <MButton>
+            <MButton onClick={connectWallet}>
                 {account ? filterAddress(account) : 'CONNECT YOUR WALLET'}
             </MButton>
         </>
