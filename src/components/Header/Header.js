@@ -3,12 +3,12 @@ import Link from '@mui/material/Link'
 import styled from 'styled-components'
 import Container from '@mui/material/Container'
 import Button from '@mui/material/Button'
-import WalletConnectProvider from '@walletconnect/web3-provider'
+// import WalletConnectProvider from '@walletconnect/web3-provider'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Divide as Hamburger } from 'hamburger-react'
 import { useMedia } from 'react-use'
-import Web3Modal from 'web3modal'
-import Web3 from 'web3'
+// import Web3Modal from 'web3modal'
+// import Web3 from 'web3'
 
 const Wrapper = styled(motion.div)`
   height: 100%;
@@ -95,46 +95,46 @@ const Header = ({ account, setWeb3, setAccount, setRightChain, setAlert, setNoti
     const [isOpen, setIsOpen] = useState(false)
     const isMobile = useMedia('(max-width: 1075px)')
 
-    const providerOptions = {
-        walletconnect: {
-            package: WalletConnectProvider,
-            options: {
-                chainId: 338,
-                rpc: {
-                    338: "https://cronos-testnet-3.crypto.org:8545/",
-                },
-                network: "cronos",
-            },
-        },
+    // const providerOptions = {
+    //     walletconnect: {
+    //         package: WalletConnectProvider,
+    //         options: {
+    //             chainId: 338,
+    //             rpc: {
+    //                 338: "https://cronos-testnet-3.crypto.org:8545/",
+    //             },
+    //             network: "cronos",
+    //         },
+    //     },
 
-        injected: {
-            display: {
-                logo: "https://github.com/MetaMask/brand-resources/raw/master/SVG/metamask-fox.svg",
-                name: "MetaMask",
-                description: "Connect with MetaMask in your browser",
-            },
-            package: null,
-        },
-    }
+    //     injected: {
+    //         display: {
+    //             logo: "https://github.com/MetaMask/brand-resources/raw/master/SVG/metamask-fox.svg",
+    //             name: "MetaMask",
+    //             description: "Connect with MetaMask in your browser",
+    //         },
+    //         package: null,
+    //     },
+    // }
 
-    const web3Modal = new Web3Modal({
-        cacheProvider: false,
-        providerOptions,
-    })
+    // const web3Modal = new Web3Modal({
+    //     cacheProvider: false,
+    //     providerOptions,
+    // })
 
     const filterAddress = (address) => {
         return address.slice(0, 5) + '...' + address.slice(38, 42)
     }
 
-    const checkNetwork = (chainId) => {
-        if (Number(chainId) === 338) {
-            setRightChain(true)
-        } else {
-            setNotice(["error", "Your wallet is connected to wrong network. Please switch to Cronos Testnet."])
-            setAlert(true)
-            setRightChain(false)
-        }
-    }
+    // const checkNetwork = (chainId) => {
+    //     if (Number(chainId) === 338) {
+    //         setRightChain(true)
+    //     } else {
+    //         setNotice(["error", "Your wallet is connected to wrong network. Please switch to Cronos Testnet."])
+    //         setAlert(true)
+    //         setRightChain(false)
+    //     }
+    // }
 
     // const connectWallet = async () => {
     //     const provider = await web3Modal.connect()

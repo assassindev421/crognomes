@@ -27,6 +27,8 @@ const Home = () => {
     const [alert, setAlert] = useState(false)
     const [notice, setNotice] = useState(["", ""])
 
+    console.log(web3, rightChain)
+
     return (
         <div className='top' style={{ height: '100%' }}>
             <Wrapper>
