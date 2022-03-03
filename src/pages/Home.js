@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import Header from '../components/Header/Header'
-// import Content from '../components/Content/Content'
+import Content from '../components/Content/Content'
 import Footer from '../components/Footer/Footer'
+import WalletConnect from '../components/WalletConnect/WalletConnect'
 import CustomizedSnackbars from '../components/Alert/Alert'
 
 const Wrapper = styled.div`
@@ -21,13 +22,10 @@ const Shadow = styled.div`
 `
 
 const Home = () => {
-    const [web3, setWeb3] = useState()
-    const [rightChain, setRightChain] = useState(false)
-    const [account, setAccount] = useState()
+    const [{ walletProviderName, address, browserWeb3Provider, serverWeb3Provider, connected, chainId }, setWallet] = useState({})
+    const [open, setOpen] = useState(false)
     const [alert, setAlert] = useState(false)
     const [notice, setNotice] = useState(["", ""])
-
-    console.log(web3, rightChain)
 
     return (
         <div className='top' style={{ height: '100%' }}>
@@ -40,20 +38,23 @@ const Home = () => {
                         message={notice[1]}
                     />
                     <Header
-                        account={account}
-                        setWeb3={setWeb3}
-                        setAccount={setAccount}
-                        setRightChain={setRightChain}
+                        account={address}
+                        setAlert={setAlert}
+                        setNotice={setNotice}
+                        setOpen={setOpen}
+                    />
+                    <Content
+                        account={address}
+                        provider={browserWeb3Provider}
+                        chainId={chainId}
                         setAlert={setAlert}
                         setNotice={setNotice}
                     />
-                    {/* <Content
-                        account={account}
-                        web3={web3}
-                        rightChain={rightChain}
-                        setAlert={setAlert}
-                        setNotice={setNotice}
-                    /> */}
+                    <WalletConnect
+                        open={open}
+                        setOpen={setOpen}
+                        setWallet={setWallet}
+                    />
                 </Shadow>
             </Wrapper>
             <Footer />

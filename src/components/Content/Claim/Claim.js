@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
+import { ethers } from "ethers"
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import styled from 'styled-components'
 import LoadingButton from '@mui/lab/LoadingButton'
 
 import ABIs from '../../../config/abis.json'
+import * as config from "../../../config/config";
 
 const TextTitle = styled.div`
     color: #FDDA33;
@@ -68,15 +70,15 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Claim = ({ account, web3, rightChain, utilContract, setAlert, setNotice }) => {
+const Claim = ({ account, provider, chainId, utilInstance, setAlert, setNotice }) => {
     const [ctokAmount, setCtokAmount] = useState(0)
     const [loading, setLoading] = useState(false)
 
     const getTotalClaimable = async () => {
-        const contract = new web3.eth.Contract(ABIs[0].abi, ABIs[0].address)
-        const method = await contract.methods.getTotalClaimable(account).call().catch(e => {
-            setLoading(false)
-        })
+        const contract = new ethers.Contract(ABIs[0].address, ABIs[0].abi, provider)
+        const instance = contract.connect(provider.getSigner())
+        const tx = await instance["getTotalClaimable"](account)
+        const method = await tx.wait()
         setCtokAmount((parseInt(method.toString(10)) / (10 ** 18)).toFixed(2))
         setLoading(false)
     }
@@ -84,9 +86,7 @@ const Claim = ({ account, web3, rightChain, utilContract, setAlert, setNotice })
     const getReward = async () => {
         setLoading(true)
         try {
-            await utilContract.methods.getReward(account).send({
-                from: account
-            })
+            await utilInstance["getReward"](account)
             setNotice(["success", "You have claimed your reward"])
             setAlert(true)
             getTotalClaimable()
@@ -100,10 +100,10 @@ const Claim = ({ account, web3, rightChain, utilContract, setAlert, setNotice })
     const migrate = async () => {
         setLoading(true)
         try {
-            const contract = new web3.eth.Contract(ABIs[1].abi, ABIs[1].address)
-            await contract.methods.migrateFromOldCrognome().send({
-                from: account
-            })
+            const contract = new ethers.Contract(ABIs[1].address, ABIs[1].abi, provider)
+            const instance = contract.connect(provider.getSigner())
+            const tx = await instance["migrateFromOldCrognome"]()
+            await tx.wait()
             setNotice(["success", "You have migrated your old crognomes"])
             setAlert(true)
             setLoading(false)
@@ -115,27 +115,30 @@ const Claim = ({ account, web3, rightChain, utilContract, setAlert, setNotice })
     }
 
     // useEffect(() => {
-    //     if (account !== undefined && rightChain === true) {
+    //     if (account !== undefined && chainId === config.configVars.rpcNetwork_mainnet.chainId) {
     //         getTotalClaimable()
     //     }
-    // }, [account, rightChain])
+    // }, [account, chainId])
 
     return (
         <Wrapper>
             <TextTitle>Claim Your CCL Tokens</TextTitle>
             <MButton
                 onClick={getTotalClaimable}
-                disabled={!rightChain}>
+                // disabled={chainId !== config.configVars.rpcNetwork_mainnet.chainId}
+                disabled
+            >
                 {ctokAmount} CLAIMABLE TOKENS</MButton>
             <MBox>
                 <SButton loading={loading}
                     onClick={getReward}
-                    disabled={!rightChain}
+                    // disabled={chainId !== config.configVars.rpcNetwork_mainnet.chainId}
+                    disabled
                 >CLAIM</SButton>
                 <SButton loading={loading}
                     onClick={migrate}
                     style={{ marginTop: 20 }}
-                    disabled={!rightChain}
+                // disabled={chainId !== config.configVars.rpcNetwork_mainnet.chainId}
                 >
                     MIGRATE
                 </SButton>

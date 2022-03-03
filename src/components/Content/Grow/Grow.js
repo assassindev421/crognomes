@@ -1,9 +1,11 @@
 import { useState } from "react"
+import { ethers } from "ethers"
 import BigNumber from 'bignumber.js'
 import Box from '@mui/material/Box'
 import styled from 'styled-components'
 import LoadingButton from '@mui/lab/LoadingButton'
 import Menu from '../../Menu/Menu'
+import * as config from "../../../config/config";
 
 import ABIs from '../../../config/abis.json'
 
@@ -23,6 +25,10 @@ const MBox = styled(Box)`
     flex-direction: column;
     justify-content: space-between;
     margin-bottom: 100px;
+
+    .Mui-disabled {
+        background-color: rgba(253,218,51,0.8) !important;
+    }
 
     .MuiCircularProgress-colorInherit {
         color: green !important;
@@ -55,13 +61,14 @@ const SButton = styled(LoadingButton)`
     height: 57px;
 `
 
-const Grow = ({ account, web3, rightChain, utilContract, crobyList, setCrobyList, setAlert, setNotice }) => {
+const Grow = ({ account, provider, chainId, utilInstance, crobyList, setCrobyList, setAlert, setNotice }) => {
     const [crobyActive, setCrobyActive] = useState(-1)
     const [loading, setLoading] = useState(false)
 
     const getWalletOfOwner = async (index) => {
-        const contract = new web3.eth.Contract(ABIs[index].abi, ABIs[index].address)
-        return await contract.methods.walletOfOwner(account).call()
+        const contract = new ethers.Contract(ABIs[index].address, ABIs[index].abi, provider)
+        const instance = contract.connect(provider.getSigner())
+        return await instance["walletOfOwner"](account)
     }
 
     const getCrobyList = async () => {
@@ -74,21 +81,18 @@ const Grow = ({ account, web3, rightChain, utilContract, crobyList, setCrobyList
         if (crobyActive !== -1) {
             setLoading(true);
             try {
-                const contract = new web3.eth.Contract(ABIs[4].abi, ABIs[4].address)
-                const allowance = await contract.methods.allowance(account, ABIs[0].address).call()
-                const balance = await contract.methods.balanceOf(account).call()
+                const contract = new ethers.Contract(ABIs[4].address, ABIs[4].abi, provider)
+                const instance = contract.connect(provider.getSigner())
+                const allowance = await instance["allowance"](account, ABIs[0].address)
+                const balance = await instance["balanceOf"](account)
                 if (new BigNumber(balance.toString()).lt(new BigNumber(445).times(10 ** 18))) {
                     setNotice(["error", "Sorry, you do not have enough CCL token for breed"])
                     setAlert(true)
                 }
                 if (new BigNumber(allowance.toString()).lt(new BigNumber(445).times(10 ** 18))) {
-                    await contract.methods.approve(ABIs[0].address, "300000000000000000000000").send({
-                        from: account
-                    })
+                    await instance["approve"](ABIs[0].address, "300000000000000000000000")
                 }
-                await utilContract.methods.growUp(crobyList[crobyActive]).send({
-                    from: account
-                })
+                await utilInstance["growUp"](crobyList[crobyActive])
                 await getCrobyList()
                 setNotice(["success", "Your croby has grown"])
                 setAlert(true)
@@ -115,10 +119,15 @@ const Grow = ({ account, web3, rightChain, utilContract, crobyList, setCrobyList
                 name='CROBY'
                 items={crobyList}
                 active={crobyActive}
-                setActive={setCrobyActive} />
+                setActive={setCrobyActive}
+                // disabled={chainId !== config.configVars.rpcNetwork_mainnet.chainId}
+                disabled
+            />
             <SButton loading={loading}
                 onClick={growCroby}
-                disabled={!rightChain}>GROW UP</SButton>
+                // disabled={chainId !== config.configVars.rpcNetwork_mainnet.chainId}
+                disabled
+            >GROW UP</SButton>
         </MBox>
     )
 }

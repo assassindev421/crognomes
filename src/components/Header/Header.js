@@ -91,75 +91,44 @@ const BurgerMenu = () => {
     )
 }
 
-const Header = ({ account, setWeb3, setAccount, setRightChain, setAlert, setNotice }) => {
+const Header = ({ account, setAlert, setNotice, setOpen }) => {
     const [isOpen, setIsOpen] = useState(false)
     const isMobile = useMedia('(max-width: 1075px)')
-
-    const providerOptions = {
-        walletconnect: {
-            package: WalletConnectProvider,
-            options: {
-                chainId: 338,
-                rpc: {
-                    338: "https://cronos-testnet-3.crypto.org:8545/",
-                },
-                network: "cronos",
-            },
-        },
-
-        injected: {
-            display: {
-                logo: "https://github.com/MetaMask/brand-resources/raw/master/SVG/metamask-fox.svg",
-                name: "MetaMask",
-                description: "Connect with MetaMask in your browser",
-            },
-            package: null,
-        },
-    }
-
-    const web3Modal = new Web3Modal({
-        cacheProvider: false,
-        providerOptions,
-    })
 
     const filterAddress = (address) => {
         return address.slice(0, 5) + '...' + address.slice(38, 42)
     }
 
     const checkNetwork = (chainId) => {
-        if (Number(chainId) === 338) {
-            setRightChain(true)
+        if (Number(chainId) === 25) {
         } else {
-            setNotice(["error", "Your wallet is connected to wrong network. Please switch to Cronos Testnet."])
+            setNotice(["error", "Your wallet is connected to wrong network. Please switch to Cronos Mainnet."])
             setAlert(true)
-            setRightChain(false)
         }
     }
 
     const connectWallet = async () => {
-        const provider = await web3Modal.connect()
-        const _web3 = new Web3(provider)
-        let _account = "";
-        _web3.eth.currentProvider.request({ method: 'eth_requestAccounts' }).then((res) => {
-            _account = res[0]
-        })
-        const chainId = await _web3.eth.getChainId()
-        checkNetwork(chainId)
-        setWeb3(_web3)
-        setAccount(_account)
-        provider.on("chainChanged", (chainId) => {
-            checkNetwork(chainId)
-        });
+        // const provider = await web3Modal.connect()
+        // const _web3 = new Web3(provider)
+        // let _account = "";
+        // _web3.eth.currentProvider.request({ method: 'eth_requestAccounts' }).then((res) => {
+        //     _account = res[0]
+        // })
+        // const chainId = await _web3.eth.getChainId()
+        // checkNetwork(chainId)
+        // setWeb3(_web3)
+        // setAccount(_account)
+        // provider.on("chainChanged", (chainId) => {
+        //     checkNetwork(chainId)
+        // });
+        setOpen(true);
     }
 
     return (
         <>
             {!isMobile ?
                 <MenuContainer>
-                    <LinkText>The Story</LinkText>
-                    <LinkText>Roadmap</LinkText>
-                    <LinkText>Housing a Crognome</LinkText>
-                    <LinkText>FAQ</LinkText>
+                    <LinkText>Home</LinkText>
                 </MenuContainer> :
                 <MobileMenuContainer>
                     <Hamburger color="#977D00" rounded toggled={isOpen} toggle={setIsOpen} />
